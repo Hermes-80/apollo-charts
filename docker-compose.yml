@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  api:
+    build: ./api
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - COINGECKO_BASE=https://api.coingecko.com/api/v3
+      - REDIS_URL=${REDIS_URL}
+      - PORT=4000
+    depends_on:
+      - db
+      - redis
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=crypto_screener
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - ./api/scripts/db_init.sql:/docker-entrypoint-initdb.d/init.sql
+  redis:
+    image: redis:6
+  web:
+    build: ./web
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE=http://api:4000/api
